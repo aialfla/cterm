@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.ezen.cterm.mapper.msgMapper">
+
+	<!-- !! Mapper 등록 후 꼭 DAO 주소 입력할 것 !! ex) "mapper namespace.id" -->
+	<!-- 받은 쪽지 갯수 세기 -->
+	<select id="count_r" parameterType="map" resultType="int">
+		select count(*) as count 
+		from msgto a 
+		left join msg b on a.msgNO = b.msgNO
+		left join member c on a.id = c.id
+		where a.id = #{id} 
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				and (wdate BETWEEN(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="searchName != null and searchName != ''">
+		 and name like concat('%',#{searchName},'%')
+		</if>
+		<if test="searchDept != null">
+			and (select dept from member where id = a.id)
+			<choose>
+				<when test="searchDept == 0"> between 0 and 3 </when>
+				<when test="searchDept == 1"> = 1 </when>
+				<when test="searchDept == 2"> = 2 </when>
+				<when test="searchDept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="searchDuty != null">
+			and (select duty from member where id = a.id)  
+			<choose>
+				<when test="searchDuty == 0"> between 0 and 4 </when>
+				<when test="searchDuty == 1"> = 1 </when>
+				<when test="searchDuty == 2"> = 2 </when>
+				<when test="searchDuty == 3"> = 3 </when>
+				<when test="searchDuty == 4"> = 4 </when>
+			</choose>
+		</if>
+	</select>
+	
+	<!-- 보낸 쪽지 갯수 세기 -->
+	<select id="count_s" parameterType="map" resultType="int">
+		select count(*) as count 
+		from msg a 
+		inner join msgto b on a.msgNO = b.msgNO 
+		left join member c on a.id = c.id
+		where a.id = #{id} 
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				and (a.wdate BETWEEN(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="searchName != null and searchName != ''">
+		 and name like concat('%',#{searchName},'%')
+		</if>
+		<if test="searchDept != null">
+			and (select dept from member where id = b.id)
+			<choose>
+				<when test="searchDept == 0"> between 0 and 3 </when>
+				<when test="searchDept == 1"> = 1 </when>
+				<when test="searchDept == 2"> = 2 </when>
+				<when test="searchDept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="searchDuty != null">
+			and (select duty from member where id = b.id)  
+			<choose>
+				<when test="searchDuty == 0"> between 0 and 4 </when>
+				<when test="searchDuty == 1"> = 1 </when>
+				<when test="searchDuty == 2"> = 2 </when>
+				<when test="searchDuty == 3"> = 3 </when>
+				<when test="searchDuty == 4"> = 4 </when>
+			</choose>
+		</if>
+	</select>
+	
+	<!-- 쪽지 읽기 -->
+	<select id="view" parameterType="msgVo" resultType="map">
+		select a.msgNO, a.note, a.wdate, b.state, a.id,
+		(select name from member where id = a.id) as name_s, 
+		(select duty from member where id = a.id) as duty_s, 
+		(select name from member where id = b.id) as name_r, 
+		(select duty from member where id = b.id) as duty_r 
+		from msg a inner join msgto b on a.msgno = b.msgno
+		where a.msgNO = #{msgNO} 
+		limit 1
+	</select>
+	
+	<!-- 발신 쪽지 읽기 -->
+	<select id="view_s" parameterType="map" resultType="map">
+		select a.msgNO, a.note, a.wdate, b.state, a.id, b.msgtoNO, 
+		(select name from member where id = a.id) as name_s, 
+		(select duty from member where id = a.id) as duty_s, 
+		(select name from member where id = b.id) as name_r, 
+		(select duty from member where id = b.id) as duty_r 
+		from msg a inner join msgto b on a.msgno = b.msgno
+		where a.msgNO = #{msgNO} and b.msgtoNO = #{msgtoNO}
+	</select>
+	
+	<!-- 쪽지 쓰기 -->
+	<insert id="write" parameterType="MsgVo" useGeneratedKeys="true" keyProperty="msgNO">
+	<![CDATA[
+		insert into msg 
+		(
+		id, 
+		note 
+		) values (
+		#{id}, 
+		#{note}
+		)
+	]]>
+	</insert>
+	
+	<!-- 수신자 등록 checkAdd -->
+	<insert id="checkAdd" parameterType="MsgtoVo" useGeneratedKeys="true" keyProperty="msgNO">
+		insert into msgto
+		(
+		msgNO,
+		id
+		) values (
+		#{msgNO}, 
+		#{id}
+		)
+	</insert>
+	
+	<!-- 쪽지 상태 조회 -->
+	<select id="state" parameterType="MsgtoVo" resultType="String">
+		select state from msgto where msgtoNO = #{msgtoNO}
+	</select>
+	
+	<!-- 안읽은 쪽지 수 세기 -->
+	<select id="count_nr" parameterType="MemberVo" resultType="int">
+		select count(*) from msgto where id = #{id} and state = '0' 
+	</select>
+	
+	<!-- 받은 쪽지목록 조회 -->
+	<select id="list_r" parameterType="map" resultType="map">
+		select a.msgNO, a.note, a.wdate, b.state,
+		(select name from member where id = a.id) as name_s, 
+		(select dept from member where id = a.id) as dept_s, 
+		(select duty from member where id = a.id) as duty_s, 
+		(select name from member where id = b.id) as name_r, 
+		(select dept from member where id = b.id) as dept_r, 
+		(select duty from member where id = b.id) as duty_r 
+		from msg a inner join msgto b on a.msgNO = b.msgNO 
+		where b.id = #{id} 
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				and (wdate BETWEEN(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="searchName != null and searchName != ''">
+		 and (select name from member where id = a.id) like concat('%',#{searchName},'%')
+		</if>
+		<if test="searchDept != null">
+			and (select dept from member where id = a.id)
+			<choose>
+				<when test="searchDept == 0"> between 0 and 3 </when>
+				<when test="searchDept == 1"> = 1 </when>
+				<when test="searchDept == 2"> = 2 </when>
+				<when test="searchDept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="searchDuty != null">
+			and (select duty from member where id = a.id)  
+			<choose>
+				<when test="searchDuty == 0"> between 0 and 4 </when>
+				<when test="searchDuty == 1"> = 1 </when>
+				<when test="searchDuty == 2"> = 2 </when>
+				<when test="searchDuty == 3"> = 3 </when>
+				<when test="searchDuty == 4"> = 4 </when>
+			</choose>
+		</if>
+		order by b.state, wdate desc
+		limit #{ limitOffset }, #{ perPage }
+	</select>
+	
+	<!-- 보낸 쪽지목록 조회 -->
+	<select id="list_s" parameterType="map" resultType="map">
+		select a.msgNO, a.note, a.wdate, b.state, b.msgtoNO,
+		(select name from member where id = a.id) as name_s, 
+		(select dept from member where id = a.id) as dept_s, 
+		(select duty from member where id = a.id) as duty_s, 
+		(select name from member where id = b.id) as name_r, 
+		(select dept from member where id = b.id) as dept_r, 
+		(select duty from member where id = b.id) as duty_r 
+		from msg a 
+		inner join msgto b on a.msgNO = b.msgNO 
+		left join member c on a.id = c.id
+		where a.id = #{id} 
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				and (a.wdate BETWEEN(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="searchName != null and searchName != ''">
+		 and name like concat('%',#{searchName},'%')
+		</if>
+		<if test="searchDept != null">
+			and (select dept from member where id = b.id)
+			<choose>
+				<when test="searchDept == 0"> between 0 and 3 </when>
+				<when test="searchDept == 1"> = 1 </when>
+				<when test="searchDept == 2"> = 2 </when>
+				<when test="searchDept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="searchDuty != null">
+			and (select duty from member where id = b.id)  
+			<choose>
+				<when test="searchDuty == 0"> between 0 and 4 </when>
+				<when test="searchDuty == 1"> = 1 </when>
+				<when test="searchDuty == 2"> = 2 </when>
+				<when test="searchDuty == 3"> = 3 </when>
+				<when test="searchDuty == 4"> = 4 </when>
+			</choose>
+		</if>
+		order by a.wdate desc
+		limit #{ limitOffset }, #{ perPage }
+	</select>
+	
+	<!-- 수신 확인을 위한 쪽지발신번호와 수신자 정보 호출 -->
+	<select id="get_msgtoVO" parameterType="msgtoVO" resultType="msgtoVO">
+		select msgtoNO, msgNO, id 
+		from msgto
+		where msgNO = #{msgNO} and id = #{id}
+	</select>
+	
+	<!-- 읽음 상태 전환 -->
+	<update id="toggle" parameterType="int">
+		update msgto set 
+		state = 1 
+		where msgtoNO = #{msgtoNO}
+	</update>
+	
+	<!-- 미수신 쪽지 회수 -->
+	<delete id="delete" parameterType="int">
+		delete from msgto
+		where state = 0 and msgtoNO = #{msgtoNO}
+	</delete>
+</mapper>

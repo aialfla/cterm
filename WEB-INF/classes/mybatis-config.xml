@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatisorg//DTD Config 3.0/EN"
+				"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<typeAliases>
+		<typeAlias type="com.ezen.cterm.vo.AuthDocuVo"		alias="authDocuVo"/>
+		<typeAlias type="com.ezen.cterm.vo.AuthOverVo"		alias="authOverVo"/>
+		<typeAlias type="com.ezen.cterm.vo.AuthVacaVo"		alias="authVacaVo"/>
+		<typeAlias type="com.ezen.cterm.vo.DocuAttachVo"	alias="docuAttachVo"/>
+		<typeAlias type="com.ezen.cterm.vo.DateVo"			alias="dateVo"/>
+		<typeAlias type="com.ezen.cterm.vo.DocuVo"			alias="docuVo"/>
+		<typeAlias type="com.ezen.cterm.vo.MemberSearchVo"	alias="memberSearchVo"/>
+		<typeAlias type="com.ezen.cterm.vo.MemberVo"		alias="memberVo"/>
+		<typeAlias type="com.ezen.cterm.vo.MsgtoVo"			alias="msgtoVo"/>
+		<typeAlias type="com.ezen.cterm.vo.MsgVo"			alias="msgVo"/>
+		<typeAlias type="com.ezen.cterm.vo.NoticeAttachVo"	alias="noticeAttachVo"/>
+		<typeAlias type="com.ezen.cterm.vo.NoticeVo"		alias="noticeVo"/>
+		<typeAlias type="com.ezen.cterm.vo.OverVo"			alias="overVo"/>
+		<typeAlias type="com.ezen.cterm.vo.SearchVo"		alias="searchVo"/>
+		<typeAlias type="com.ezen.cterm.vo.VacaVo"			alias="vacaVo"/>
+		<typeAlias type="com.ezen.cterm.vo.WorkVo"			alias="workVo"/>
+		<typeAlias type="com.ezen.cterm.vo.CalendarVo"		alias="calendarVo"/>
+	</typeAliases>
+
+</configuration>

@@ -1,0 +1,53 @@
+main : 메인페이지
+
+<member> 사원
+login : 로그인페이지
+join : 신규사원 가입
+list : 사원 정보 조회
+modify_mine : 내 정보 수정
+modify_admin : 사원 정보 수정(관리자)
+(info) : 사원 정보 상세내역
+
+<notice> 공지
+list : 공지 목록
+view : 공지 글 상세 조회
+modify : 공지 수정
+write : 공지 작성
+
+<msg> 쪽지
+list_r : 수신 쪽지 목록
+list_s : 발신 쪽지 목록
+write : 쪽지 쓰기
+(view) : 쪽지 읽기
+(sendlist) : 보낼 사원 목록
+
+<work> 근무
+list_mine : 내 근무 목록
+list_work : 근무 전체 목록
+
+list_over : 초과근무 목록
+write_over : 초과근무 작성
+list_over_admin : 초과근무 전체 목록
+(sendlist) : 결재자 사원 목록
+
+<docu> 기안
+list_mine : 내 기안 목록
+list : 기안 전체 목록
+view : 기안 상세 조회
+write : 기안 작성
+(sendlist) : 결재자 사원 목록
+
+<auth> 결재
+list_over : 초과근무 결재 목록
+list_vaca : 연차 결재 목록
+list_docu : 기안 결재 목록
+
+<vacation> 연차
+list_mine : 내 연차 목록
+view : 연차 상세 조회
+list : 연차 전체 목록
+(history) : 연차 내역
+(sendlist) : 결재자 사원 목록
+
+
+*( ) : 팝업 처리

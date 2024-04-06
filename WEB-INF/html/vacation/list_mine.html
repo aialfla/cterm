@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="kr">
+<!-- ==== head 시작 ==================================================================================== -->
+<head>
+	<meta charset="UTF-8">
+	<title>cterm</title>
+	<link rel="stylesheet" href="../../resources/css/common.css">
+	<link rel="stylesheet" href="../../resources/css/board.css">
+</head>
+<!-- ==== /head 종료 ==================================================================================== -->
+
+<!-- ==== body 시작 ===================================================================================== -->
+<body>
+	<!-- == 상단창 시작 =============================================================================== -->
+	<header id="header">
+		<h1 class="blind">cterm 인사관리시스템</h1>
+		<div class="info">
+			<ul class="alarm_list">
+				<li><a href="#" title="결재 승인"><i class="fi fi-rr-stamp"></i><span class="num">2</span></a></li>
+				<li><a href="#" title="받은 쪽지"><i class="fi fi-rr-envelope"></i><span class="num">3</span></a></li>
+			</ul>
+			<a href="#" title="내정보" class="info_mine">
+				<div class="icon_person"><i class="fi fi-sr-user PT2"></i></div>
+				<h2><span class="rank">부장</span><span class="name">김철수</span></h2>
+			</a>
+		</div>
+	</header>
+	<!-- == /상단창 종료 ================================================================================== -->
+
+	
+	<!-- == 메인메뉴 시작 ================================================================================== -->
+	<nav id="nav">
+		<ul class="menu">
+			<li class="active">
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-home PT1 fts16"></i></div>
+					<div class="txt">홈</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-briefcase PT1"></i></div>
+					<div class="txt">근무</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-umbrella-beach PT2"></i></div>
+					<div class="txt">연차</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-users-alt PT5 fts20"></i></div>
+					<div class="txt">사원</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-file-edit PT1 PL2"></i></div>
+					<div class="txt">결재</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-bullhorn PT2"></i></div>
+					<div class="txt">공지</div>
+				</a>
+			</li>
+		</ul>
+	</nav>
+	<!-- == /메인메뉴 종료 ================================================================================== -->
+
+
+	<!-- == 정보영역 시작 ================================================================================= -->
+	<main id="main">
+		<!-- = 토탈정보 시작 ============================================================================= -->
+		<article id="total_warp">
+			<ul>
+				<!-- <li class="col_w50">
+					<h3>연차 승인 현황</h3>
+					<strong>23.10.27(금) ~ 23.10.27(금)</strong>
+					<div class="color_red">진행중</div>
+				</li> -->
+				<li>
+					<h3>연차 승인 요청</h3>
+					<strong class="color_purple">진행중</strong>
+					<div>23.10.27(금) ~ 23.10.27(금)</div>
+				</li>
+				<li>
+					<h3>총 연차</h3>
+					<strong class="color_red">13일</strong>
+					<div>D-88</div>
+				</li>
+				<li>
+					<h3>금주 누적 근무</h3>
+					<strong>16:00</strong>
+					<div>/ 52시간</div>
+				</li>
+				<li>
+					<h3>금년 잔여 연차</h3>
+					<strong>11일</strong>
+					<div>/ 13일</div>
+				</li>
+			</ul>
+		</article>
+		<!-- == /토탈정보 종료 ========================================================================== -->
+
+
+		<!-- == 메인정보 시작 ========================================================================== -->
+		<section id="main_warp">
+			<!-- == 서브메뉴 시작 ===================================================================== -->
+			<nav id="nav_sub">
+				<ul class="menu_sub">
+					<li>
+						<a href="#">내 근무</a>
+					</li>
+					<li>
+						<a href="#">근무 조회</a>
+					</li>
+					<li class="active">
+						<a href="#">초과 근무</a>
+					</li>
+				</ul>
+			</nav>
+			<!-- == /서브메뉴 종료 ===================================================================== -->
+
+			<!-- == 서브타이틀 시작 ===================================================================== -->
+			<div class="tit_sub">
+				<div class="date_warp">
+						<input type="date" value="2023-10-01" title="시작 날짜">
+					<span class="slash"> ~ </span>
+						<input type="date" value="2023-10-31" title="종료 날짜">
+				</div>
+				<a href="#" class="btn_write"><i class="fi fi-sr-time-add"></i>연차 신청</a>
+			</div>
+			<!-- == 서브타이틀 종료 ===================================================================== -->
+
+			<!-- == 목록 테이블 시작 ===================================================================== -->
+			<table class="tb_list">
+				<caption class="blind">연차 내역</caption>
+				<thead>
+					<tr>
+						<th>일자</th>
+						<th>시작</th>
+						<th>종료</th>
+						<th>총 근무</th>
+						<th>내용</th>
+						<th>결재 상태</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>10.01(일)</td>
+						<td>18:00</td>
+						<td>20:00</td>
+						<td>02:00</td>
+						<td>추가 서류 작업</td>
+						<td><span class="state_wait">대기</span></td>
+					</tr>
+					<tr>
+						<td>10.01(일)</td>
+						<td>18:00</td>
+						<td>20:00</td>
+						<td>02:00</td>
+						<td>추가 서류 작업</td>
+						<td><span class="state_ok">승인</span></td>
+					</tr>
+					<tr>
+						<td>10.01(일)</td>
+						<td>18:00</td>
+						<td>20:00</td>
+						<td>02:00</td>
+						<td>추가 서류 작업</td>
+						<td><span class="state_ing">진행중</span></td>
+					</tr>
+					<tr>
+						<td>10.01(일)</td>
+						<td>18:00</td>
+						<td>20:00</td>
+						<td>02:00</td>
+						<td>추가 서류 작업</td>
+						<td><span class="state_no">철회</span></td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- == /목록 테이블 종료 ===================================================================== -->
+		</section>
+		<!-- == /메인정보 종료 ========================================================================== -->
+	</main>
+	<!-- == /정보영역 종료 ================================================================================= -->
+</body>
+<!-- ==== /body 종료 ===================================================================================== -->
+</html>

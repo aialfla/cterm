@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.ezen.cterm.mapper.overMapper">
+
+	<!-- !! Mapper 등록 후 꼭 DAO 주소 입력할 것 !! ex) "mapper namespace.id" -->
+	
+	<!-- 초과근무 갯수 세기 -->
+	<select id="count" parameterType="map" resultType="int">
+		select count(*)
+		from overtime a inner join member b on a.id = b.id 
+		where (a.date BETWEEN
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				#{ startday } and #{ endday })
+			</when>
+			<otherwise>
+				(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="duty == 0">
+				<if test="searchName != null and searchName != ''">
+				 and name like concat('%',#{searchName},'%')
+				</if>
+				<if test="searchDept != null">
+					and dept 
+					<choose>
+						<when test="searchDept == 0"> between 1 and 3 </when>
+						<when test="searchDept == 1"> = 1 </when>
+						<when test="searchDept == 2"> = 2 </when>
+						<when test="searchDept == 3"> = 3 </when>
+					</choose>
+				</if>
+				<if test="searchDuty != null">
+					and duty  
+					<choose>
+						<when test="searchDuty == 0"> between 1 and 4 </when>
+						<when test="searchDuty == 1"> = 1 </when>
+						<when test="searchDuty == 2"> = 2 </when>
+						<when test="searchDuty == 3"> = 3 </when>
+						<when test="searchDuty == 4"> = 4 </when>
+					</choose>
+				</if>
+			</when>
+			<otherwise>
+				<if test="searchName != null and searchName != ''">
+				 and name like concat('%',#{searchName},'%')
+				</if>
+				and dept = #{dept} and duty &gt; #{duty}
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 내 초과근무 기록 조회 -->
+	<select id="list_mine" resultType="Map" parameterType="Map">
+		select overNO, date, note, state,
+		time_format(start,"%H:%i") as start, time_format(end,"%H:%i") as end, 
+		time_format(subtime(end, start),"%H:%i") as time 
+		from overtime 
+		where id = #{id} and (date BETWEEN
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				#{ startday } and #{ endday })
+			</when>
+			<otherwise>
+				(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</otherwise>
+		</choose>
+		order by date desc, overNO desc
+	</select>
+	
+	<!-- 주간 누적 초과근무 시간 조회 -->
+	<select id="weeklyOver" resultType="Map">
+	select time_format(sum(subtime(end, start)),"%k") as weeklyOver 
+		from overtime 
+		where date 
+		between 
+			ADDDATE( curdate(), - WEEKDAY(curdate()) + 0 ) 
+				and 
+			ADDDATE( curdate(), - WEEKDAY(curdate()) + 6 )
+		and id = #{id}
+		and state = 2
+	</select>
+	
+	<!-- 전 직원 초과근무 기록 조회 -->
+	<select id="list" parameterType="MemberSearchVo" resultType="Map">
+		select a.overNO, a.date, a.note, a.state, b.dept, b.duty, b.name, 
+		time_format(start,"%H:%i") as start, time_format(end,"%H:%i") as end, 
+		time_format(subtime(end, start),"%H:%i") as time 
+		from overtime a inner join member b on a.id = b.id 
+		where (a.date BETWEEN
+		<choose>
+			<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+				#{ startday } and #{ endday })
+			</when>
+			<otherwise>
+				(DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d')))
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="duty == 0">
+				<if test="searchName != null and searchName != ''">
+				 and name like concat('%',#{searchName},'%')
+				</if>
+				<if test="searchDept != null">
+					and dept 
+					<choose>
+						<when test="searchDept == 0"> between 1 and 3 </when>
+						<when test="searchDept == 1"> = 1 </when>
+						<when test="searchDept == 2"> = 2 </when>
+						<when test="searchDept == 3"> = 3 </when>
+					</choose>
+				</if>
+				<if test="searchDuty != null">
+					and duty  
+					<choose>
+						<when test="searchDuty == 0"> between 1 and 4 </when>
+						<when test="searchDuty == 1"> = 1 </when>
+						<when test="searchDuty == 2"> = 2 </when>
+						<when test="searchDuty == 3"> = 3 </when>
+						<when test="searchDuty == 4"> = 4 </when>
+					</choose>
+				</if>
+			</when>
+			<otherwise>
+				<if test="searchName != null and searchName != ''">
+				 and name like concat('%',#{searchName},'%')
+				</if>
+				and dept = #{dept} and duty &gt; #{duty}
+			</otherwise>
+		</choose>
+		order by a.date desc, a.wdate asc
+		limit #{ limitOffset }, #{ perPage }
+	</select>
+
+	<!-- 초과근무 신청 -->
+	<insert id="write" parameterType="OverVo" useGeneratedKeys="true" keyProperty="overNO">
+		insert into overtime (
+			id,
+			date,
+			start,
+			end,
+			note
+		) values (
+			#{id} , 
+			#{date} , 
+			#{start} , 
+			#{end} , 
+			#{note} 
+		)
+		
+	</insert>
+	
+	<!-- 초과근무 상세 내용 조회 -->
+	<select id="view" parameterType="int" resultType="Map">
+		select overNO, date, start, end, wdate, state, note, id, 
+		(select name from member where id = overtime.id) as name, 
+		(select duty from member where id = overtime.id) as duty, 
+		(select dept from member where id = overtime.id) as dept 
+		from overtime
+		WHERE overNO = #{overNO}
+	</select>
+	
+	<!-- 연차 결재자 등록 checkAdd -->
+	<insert id="checkAdd" parameterType="AuthOverVo">
+		 insert into overAuth (id, overNO, state) 
+		 values ( #{ id }, #{ overNO }, 0 )
+	</insert>
+	
+	<!-- 연차 결재자 및 승인 여부 조회 -->
+	<select id="checklist" parameterType="int" resultType="AuthOverVo">
+		 select auOverNO, id, overNO, state, (select duty from member where id = overAuth.id) as duty 
+		 from overAuth where overNO = #{ overNO } order by duty DESC 
+	</select>
+	
+	<!-- 연차 결재자 인원 수 조회 -->
+	<select id="checkCount" parameterType="int" resultType="int">
+		select count(*) from overAuth where overNO = #{ overNO } 
+	</select>
+	
+	<!-- (대기 제외) 결재자 인원 수 조회 -->
+	<select id="checkOkCount" parameterType="int" resultType="int">
+		select count(*) from overAuth where (state = 2 OR state = 9) and overNO = #{ overNO } 
+	</select>
+		
+	<!-- <결재자> 연차 승인 state:2 approve -->
+	<update id="approve" parameterType="AuthOverVo">
+		 update overAuth set state = 2 where id = #{ id } AND overNO = #{ overNO }
+	</update>
+	<update id="stateTwo" parameterType="int">
+		 update overtime set state = 2 where overNO = #{ overNO } 
+	</update>
+	<update id="stateOne" parameterType="int">
+		 update overtime set state = 1 where overNO = #{ overNO } 
+	</update>
+	 
+	<!-- <결재PAGE> 초과근무 신청 리스트 조회 -->
+	<select id="acceptList" parameterType="map" resultType="map">
+		 select o.overNO, o.note, date(o.wdate) as wdate, o.state, o.id, o.date, o.id
+		 <if test="duty != 0">
+			 , a.auOverNO, a.state as astate 
+		 </if>
+		 from overtime o
+		 inner join overAuth a on o.overNO = a.overNO 
+		 left join member m on o.id = m.id where 
+		 <if test="duty != 0">
+		 	a.id = #{ id } AND a.state != 0 and a.state != 8 and 
+		 </if>
+		 (o.wdate between 
+		 <choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		  #{ startday } and #{ endday })  
+		 	</when>
+		 	<otherwise>
+		 		  (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(NOW(),'%Y-12-31')))  
+		 	</otherwise>
+		 </choose>
+ 		 <if test="searchName != null and searchName != ''">
+		 and (name like concat('%',#{searchName},'%'))
+		 </if>
+		 <if test="searchDept != null">
+		 	 and (dept 
+			 <choose>
+				<when test="searchDept == 0"> between 1 and 3) </when>
+				<when test="searchDept == 1"> = 1) </when>
+				<when test="searchDept == 2"> = 2) </when>
+				<when test="searchDept == 3"> = 3) </when>
+			 </choose>
+		 </if>
+		 <if test="searchDuty != null">
+			 and (duty  
+			 <choose>
+				<when test="searchDuty == 0"> between 1 and 4) </when>
+				<when test="searchDuty == 1"> = 1) </when>
+				<when test="searchDuty == 2"> = 2) </when>
+				<when test="searchDuty == 3"> = 3) </when>
+				<when test="searchDuty == 4"> = 4) </when>
+			 </choose>
+		 </if>
+		 <if test="astate != null and duty != 0">
+			 and (a.state 
+			 <choose>
+				<when test="astate == 0"> = 1 OR a.state = 2 OR a.state = 9) </when>
+				<when test="astate == 1"> = 1) </when>
+				<when test="astate == 2"> = 2) </when>
+				<when test="astate == 3"> = 9) </when>
+			 </choose>
+		 </if>
+		 <if test="state != null and duty == 0">
+			  and (o.state 
+			 <choose>
+				<when test="state == 0"> between 0 and 9) </when>
+				<when test="state == 1"> = 0) </when>
+				<when test="state == 2"> = 1) </when>
+				<when test="state == 3"> = 2) </when>
+				<when test="state == 4"> = 8) </when>
+				<when test="state == 5"> = 9) </when>
+			 </choose>
+		 </if>
+		 <if test="duty == 0">group by o.overNO</if>
+		 order by <if test="loginduty != 0"> FIELD(a.state, 1) desc, </if> o.wdate desc, overNO desc 
+		 limit #{ limitOffset }, #{ perPage }
+	</select>
+		
+	<!-- <결재PAGE> 초과근무 신청 리스트 조회 -->
+	<select id="count_accept" parameterType="map" resultType="int">
+		 select
+		 <if test="duty == 0">count(distinct o.overNO)</if> 
+		 <if test="duty != 0">count(*)</if>  
+		 from overtime o 
+		 left join overAuth a on o.overNO = a.overNO 
+		 <if test="duty != 0">
+		 	where a.id = #{ id } AND a.state != 0 and a.state != 8 
+		 </if>
+		 
+	</select>
+		
+	<!-- 로그인유저 승인 상태 selectCheck-->
+	<select id="selectCheck" parameterType="AuthOverVo" resultType="AuthOverVo">
+		 select * from overAuth where id = #{ id } and overNO = #{ overNO } 
+	</select>
+	
+	<!-- (초과근무 신청) 결재권자 0: 결재 대기 → 1: 결재 승인 changeOne -->
+	<update id="changeOne" parameterType="map">
+		 update overAuth set state = 1 where id = #{ AId } AND overNO = #{ overNO }
+	</update>
+	
+	<!-- <결재자> overAuth 반려：9 -->
+	<update id="reject" parameterType="AuthOverVo">
+		 update overAuth set state = 9 where id = #{ id } AND overNO = #{ overNO }
+	</update>
+	
+	<!-- (초과근무 신청) 결재권자 9: 결재 반려 → 8: 반려 시 상위 직급 값 "-" 변경 changeOne -->
+	<update id="changeEight" parameterType="map">
+		 update overAuth set state = 8 where id = #{ AId } AND overNO = #{ overNO }
+	</update>
+	
+	<!-- <문서> 초과근무 반려：8 -->
+	<update id="stateNine" parameterType="int">
+		 update overtime set state = 8 where overNO = #{ overNO } 
+	</update>
+	
+		<!-- 초과근무 결재자 삭제 <철회 시> -->
+	<delete id="checkDelete" parameterType="int">
+		delete from overAuth where overNO = #{ overNO }
+	</delete>
+	
+	<!-- 초과근무 철회 -->
+	<update id="overBack" parameterType="int">
+		 update overtime set state = 9 where overNO = #{ overNO }
+	</update>
+	
+	<!-- 이미 초과근무가 신청된 날짜인지 체크 -->
+	<select id="already" parameterType="overVo" resultType="int">
+		select count(*) from overtime where date = #{ date } and id = #{ id } and state = 2 
+	</select>
+	
+	
+	<!-- 미결재 초과근무 수 조회 -->
+	<select id="countOver" parameterType="int" resultType="int">
+		select count(*) from overAuth where state = 1 and id = #{ id }
+	</select>
+</mapper>

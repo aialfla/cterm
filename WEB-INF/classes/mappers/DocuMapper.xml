@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.ezen.cterm.mapper.docuMapper">
+	
+	<!-- !! Mapper 등록 후 꼭 DAO 주소 입력할 것 !! ex) "mapper namespace.id" -->
+	
+	
+	<!-- 목록/내용 조회 =========================================================================== -->
+	<!-- 내 목록 조회 -->
+	<select id="list_mine" parameterType="map" resultType="map">
+		select docuNO, title, note, wdate, state 
+		from docu 
+		where id = #{ id } and (wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+		order by docuNO desc
+		limit #{ limitOffset }, #{ perPage }
+	</select>
+	
+	<!-- 전체 목록 조회 -->
+	<select id="list" parameterType="MemberSearchVo" resultType="map">
+		select a.docuNO, a.title, a.note, a.wdate, a.state, b.name, b.dept, b.duty 
+		from docu a inner join member b on a.id = b.id 
+		where (a.wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+		and a.state = 2 
+		and b.state = 1 
+		<if test="name != null and name != ''">
+		and name like concat('%',#{name},'%') 
+		</if>
+		<if test="dept != null">
+			and dept 
+			<choose>
+				<when test="dept == 0"> between 1 and 3 </when>
+				<when test="dept == 1"> = 1 </when>
+				<when test="dept == 2"> = 2 </when>
+				<when test="dept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="duty != null">
+			and duty  
+			<choose>
+				<when test="duty == 0"> between 1 and 4 </when>
+				<when test="duty == 1"> = 1 </when>
+				<when test="duty == 2"> = 2 </when>
+				<when test="duty == 3"> = 3 </when>
+				<when test="duty == 4"> = 4 </when>
+			</choose>
+		</if>
+		order by docuNO desc 
+		limit #{ limitOffset }, #{ perPage }
+	</select>
+	
+	<!--  내 게시글 수 조회 -->
+	<select id="count_mine" parameterType="map" resultType="int">
+		select count(docuNO) from docu 
+		where id = #{ id } and (wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+	</select>
+	
+	<!--  전체 게시글 수 조회 -->
+	<select id="count" parameterType="int" resultType="int">
+		select count(docuNO) 
+		from docu a inner join member b on a.id = b.id 
+		where (a.wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+		and a.state = 2 
+		and b.state = 1 
+		<if test="name != null and name != ''">
+		 and name like concat('%',#{name},'%') 
+		</if>
+		<if test="dept != null">
+			and dept 
+			<choose>
+				<when test="dept == 0"> between 1 and 3 </when>
+				<when test="dept == 1"> = 1 </when>
+				<when test="dept == 2"> = 2 </when>
+				<when test="dept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="duty != null">
+			and duty  
+			<choose>
+				<when test="duty == 0"> between 1 and 4 </when>
+				<when test="duty == 1"> = 1 </when>
+				<when test="duty == 2"> = 2 </when>
+				<when test="duty == 3"> = 3 </when>
+				<when test="duty == 4"> = 4 </when>
+			</choose>
+		</if>
+	</select>
+	
+	<!-- 기안 내용 조회 -->
+	<select id="view" parameterType="int" resultType="map">
+		 select a.docuNO, a.title, a.note, a.wdate, a.state, a.id, b.dept, b.name, b.duty 
+		 from docu a inner join member b on a.id = b.id 
+		 where docuNO = #{ docuNO }
+	</select>
+	
+	
+	
+	<!-- 기안 작성 =========================================================================== -->
+	<insert id="write"  parameterType="DocuVo" useGeneratedKeys="true" keyProperty="docuNO">
+		insert into 
+		docu ( 
+			title, 
+			note, 
+			id, 
+			wdate, 
+			state 
+		) 
+		values ( 
+			#{ title }, 
+			#{ note }, 
+			#{ id }, 
+			now(), 
+			#{ state } 
+		)
+	</insert>
+	
+	
+	
+	<!-- 첨부파일 =========================================================================== -->
+	<!-- 파일 등록 -->
+	<insert id="fileAdd" parameterType="DocuAttachVo">
+		 insert into docuAttach (newName, orgName, docuNO)
+		 values ( #{ newName }, #{ orgName }, #{ docuNO } ) 
+	</insert>
+	
+	<!-- 파일 삭제 -->
+	<delete id="fileDelete" parameterType="String">
+		 delete from docuAttach where newName = #{ newName } 
+	</delete>
+	
+	<!-- 파일 조회 -->
+	<select id="Alist" parameterType="int" resultType="DocuAttachVo">
+		 select * from docuAttach where docuNO = #{ docuNO } 
+	</select>
+	
+	
+	
+	<!-- 결재_기안 =========================================================================== -->
+	<!-- 기안 신청 목록 조회 a：AuthDocu／d：docu-->
+	<select id="authList" parameterType="map" resultType="map">
+		 select d.docuNO, d.title, d.wdate, d.state, d.id
+		<if test="loginduty != 0">
+			 , a.audocuNO, a.state as astate 
+			 from docu d join docuAuth a on d.docuNO=a.docuNO left join member m on d.id = m.id
+			 where a.id = #{ id } and 
+			 (a.state != 0 and a.state != 8) and 
+		</if>
+		<if test="loginduty == 0">
+			 from docu d left join member m on d.id = m.id 
+			 where 
+		</if>
+		 (d.wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+ 		<if test="name != null and name != ''">
+		 and m.name like concat('%',#{name},'%')
+		</if>
+		<if test="dept != null">
+			 and m.dept 
+			<choose>
+				<when test="dept == 0"> between 1 and 3 </when>
+				<when test="dept == 1"> = 1 </when>
+				<when test="dept == 2"> = 2 </when>
+				<when test="dept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="duty != null">
+			 and m.duty 
+			<choose>
+				<when test="duty == 0"> between 1 and 4 </when>
+				<when test="duty == 1"> = 1 </when>
+				<when test="duty == 2"> = 2 </when>
+				<when test="duty == 3"> = 3 </when>
+				<when test="duty == 4"> = 4 </when>
+			</choose>
+		</if>
+		<if test="astate != null and loginduty != 0">
+			 and (a.state 
+			 <choose>
+				<when test="astate == 0"> = 1 OR a.state = 2 OR a.state = 9) </when>
+				<when test="astate == 1"> = 1) </when>
+				<when test="astate == 2"> = 2) </when>
+				<when test="astate == 3"> = 9) </when>
+			 </choose>
+		</if>
+		<if test="state != null and loginduty == 0">
+			  and (d.state 
+			 <choose>
+				<when test="state == 0"> between 0 and 9) </when>
+				<when test="state == 1"> = 0) </when>
+				<when test="state == 2"> = 1) </when>
+				<when test="state == 3"> = 2) </when>
+				<when test="state == 4"> = 8) </when>
+				<when test="state == 5"> = 9) </when>
+			 </choose>
+		</if>
+		order by 
+		<if test="loginduty != 0"> FIELD(a.state, 1) desc, </if> d.wdate desc 
+		 limit #{ limitOffset }, #{ perPage } 
+	</select>
+	
+	<!-- 기안 신청글 수 조회 -->
+	<select id="count_authList" parameterType="int" resultType="int">
+		 select 
+		 <if test="loginduty != 0">
+		 	 count(a.docuNO) 
+			 from docu d join docuAuth a on d.docuNO=a.docuNO left join member m on d.id = m.id
+			 where 
+			 a.id = #{ id } and 
+			 (a.state != 0 and a.state != 8) and 
+		</if>
+		<if test="loginduty == 0">
+			 count(d.docuNO) 
+			 from docu d left join member m on d.id = m.id
+			 where 
+		</if>
+		 (d.wdate between 
+		<choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(LAST_DAY(NOW()),'%Y-%m-%d'))) 
+		 	</otherwise>
+		</choose>
+ 		<if test="name != null and name != ''">
+		 and m.name like concat('%',#{name},'%')
+		</if>
+		<if test="dept != null">
+			 and m.dept 
+			<choose>
+				<when test="dept == 0"> between 1 and 3 </when>
+				<when test="dept == 1"> = 1 </when>
+				<when test="dept == 2"> = 2 </when>
+				<when test="dept == 3"> = 3 </when>
+			</choose>
+		</if>
+		<if test="duty != null">
+			 and m.duty 
+			<choose>
+				<when test="duty == 0"> between 1 and 4 </when>
+				<when test="duty == 1"> = 1 </when>
+				<when test="duty == 2"> = 2 </when>
+				<when test="duty == 3"> = 3 </when>
+				<when test="duty == 4"> = 4 </when>
+			</choose>
+		</if>
+		<if test="astate != null and loginduty != 0">
+			 and (a.state 
+			 <choose>
+				<when test="astate == 0"> = 1 OR a.state = 2 OR a.state = 9) </when>
+				<when test="astate == 1"> = 1) </when>
+				<when test="astate == 2"> = 2) </when>
+				<when test="astate == 3"> = 9) </when>
+			 </choose>
+		</if>
+		<if test="state != null and loginduty == 0">
+			  and (d.state 
+			 <choose>
+				<when test="state == 0"> between 0 and 9) </when>
+				<when test="state == 1"> = 0) </when>
+				<when test="state == 2"> = 1) </when>
+				<when test="state == 3"> = 2) </when>
+				<when test="state == 4"> = 8) </when>
+				<when test="state == 5"> = 9) </when>
+			 </choose>
+		</if>
+	</select>
+	
+	
+	<!-- 결재자 등록 -->
+	<insert id="checkAdd" parameterType="AuthDocuVo">
+		insert into docuAuth (id, docuNO, state) 
+		values ( #{ id }, #{ docuNO }, 0 )
+	</insert>
+	
+	<!-- 결재자 및 승인 여부 조회 -->
+	<select id="checklist" parameterType="int" resultType="AuthDocuVo">
+		select auDocuNO, id, docuNO, state, (select duty from member where id = docuAuth.id) as duty 
+		from docuAuth where docuNO = #{ docuNO } order by duty DESC
+	</select>
+	
+	<!-- 결재자 인원 수 조회 -->
+	<select id="checkCount" parameterType="int" resultType="int">
+		select count(*) from docuAuth where docuNO = #{ docuNO }
+	</select>
+	
+	<!-- 결재자 인원 수 조회 (대기 제외) -->
+	<select id="checkOkCount" parameterType="int" resultType="int">
+		select count(*) from docuAuth where (state = 2 OR state = 9) and docuNO = #{ docuNO } 
+	</select>
+	
+	<!-- <결재자> docuAuth 결재 대기：0 → 승인：1 -->
+	<update id="approve" parameterType="AuthDocuVo">
+		 update docuAuth set state = 2 where id = #{ id } AND docuNO = #{ docuNO }
+	</update>
+	
+	<!-- <문서> docu 승인：2 -->
+	<update id="stateTwo" parameterType="int">
+		 update docu set state = 2 where docuNO = #{ docuNO } 
+	</update>
+	
+	<!-- <문서> docu 진행중：1 -->
+	<update id="stateOne" parameterType="int">
+		 update docu set state = 1 where docuNO = #{ docuNO } 
+	</update>
+	 
+	<!-- <결재자> docuAuth 반려：9 -->
+	<update id="reject" parameterType="AuthDocuVo">
+		 update docuAuth set state = 9 where id = #{ id } AND docuNO = #{ docuNO }
+	</update>
+
+	<!-- <문서> docu 반려：8 -->
+	<update id="stateNine" parameterType="int">
+		 update docu set state = 8 where docuNO = #{ docuNO } 
+	</update>
+
+	
+	<!-- <결재자> docuAuth 대기：0 → 결재 대기：1 -->
+	<update id="changeOne" parameterType="map">
+		 update docuAuth set state = 1 where id = #{ AId } AND docuNO = #{ docuNO }
+	</update>
+	
+	<!-- <결재자> docuAuth 결재 반려 시, 미 결재자, 결재 불가：8 -->
+	<update id="changeEight" parameterType="map">
+		 update docuAuth set state = 8 where id = #{ AId } AND docuNO = #{ docuNO }
+	</update>
+	
+	
+	<!-- <결재자> 기안 목록, docuAuth 상태 확인 -->
+	<select id="selectCheck" parameterType="AuthDocuVo" resultType="AuthDocuVo">
+		 select * from docuAuth where id = #{ id } and docuNO = #{ docuNO } 
+	</select>
+	
+	
+	<!-- 결재자 삭제 <철회 시> -->
+	<delete id="checkDelete" parameterType="int">
+		delete from docuAuth where docuNO = #{ docuNO }
+	</delete>
+	
+	<!-- 기안 철회 -->
+	<update id="docuBack" parameterType="int">
+		 update docu set state = 9 where docuNO = #{ docuNO }
+	</update>
+	
+
+	<!-- 미결재 기안 수 조회 -->
+	<select id="countDocu" parameterType="int" resultType="int">
+		select count(*) from docuAuth where state = 1 and id = #{ id }
+	</select>
+	
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<!-- MappingJacksonJsonView 설정 -->
+    <bean id="pageJsonReport" 
+		class="org.springframework.web.servlet.view.json.MappingJacksonJsonView">
+		<property name="contentType" value="text/html;charset=utf-8" />
+	</bean>
+    
+    
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"> 
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver" /> 
+		<property name="url" value="jdbc:mysql://mysqldb.cspepelevwbu.ap-northeast-2.rds.amazonaws.com:3306/cterm?characterEncoding=UTF-8&amp;serverTimezone=Asia/Seoul" /> 
+		<property name="username" value="onion" /> 
+		<property name="password" value="987654321" /> 
+	</bean> 
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath:mappers/**/*Mapper.xml" />
+	</bean>
+	
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="clearCache">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>	
+	</bean>
+	
+
+	
+		
+</beans>

@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.ezen.cterm.mapper.vacaMapper">
+
+	<!-- !! Mapper 등록 후 꼭 DAO 주소 입력할 것 !! ex) "mapper namespace.id" -->
+	<!-- ★★★★★★★★★★ Calendar ★★★★★★★★★★ -->
+	<!-- 좌측 -->
+	<select id="event" resultType="CalendarVo">
+		SELECT COUNT(*) AS count, DATE_FORMAT(date, "%Y-%m-%d") AS start  FROM date join vacation on date.vacaNO = vacation.vacaNO where vacation.state = 2 group by date
+	</select>
+
+	<!-- 우측 -->
+	<select id="todayVaca" parameterType="String" resultType="map">
+		SELECT m.id, vacation.why, DATE_FORMAT(date, "%Y-%m-%d") AS start  FROM date join vacation on date.vacaNO = vacation.vacaNO left join member m on vacation.id = m.id 
+		where vacation.state = 2 and date.date = DATE_FORMAT(
+		<if test="value == null">
+		 now() 
+		</if>
+		<if test="value != null">
+		 #{value}
+		</if>
+		, "%Y-%m-%d") order by vacation.id desc
+	</select>
+
+	<!-- 우측：오늘 날짜 값 -->
+	<select id="today" resultType="map">
+		 select DATE_FORMAT(now(), '%m월 %d일') AS today
+	</select>
+	
+	<!-- ★★★★★★★★★★ Total ★★★★★★★★★★ -->
+	<!-- 이번년도 d-day -->
+	<select id="dday" resultType="int">
+	 	SELECT DATEDIFF (DATE_FORMAT(NOW(),'%Y-12-31'), DATE_FORMAT(NOW(),'%Y-%m-%d'));
+	</select>
+	
+	<!-- <loginUser> 최근 연차 신청 날짜 조회 -->
+	<select id="checkLatestVaca" parameterType="int" resultType="map">
+		 SELECT vacaNO, state, id, wdate, 
+		 (select min(date) from date where vacaNO = vacation.vacaNO) AS sday, 
+		 (select max(date) from date where vacaNO = vacation.vacaNO) AS eday 
+ 		 FROM vacation WHERE WDATE = (SELECT MAX(WDATE) FROM vacation where id = #{ id }) 
+	</select>
+	
+	<!-- <loginUser> 입사일 ~ TODAY 사용 연차 수 총 조회 -->
+	<select id="allCount" parameterType="int" resultType="map">
+		 select id, vacaNO, why, state, 
+		 (select count(*) from date where vacaNO = vacation.vacaNO) AS day, 
+		 (select count(*) from date where vacaNO = vacation.vacaNO and (date <![CDATA[ <= ]]> now())) AS useDay  
+		 from vacation where id = #{ id } AND state = 2 order by vacaNO desc 
+	</select>	
+
+	<!-- ★★★★★★★★★★ 내 연차 ★★★★★★★★★★ -->
+	<!-- <loginUser> 연차 신청 글 수 조회 -->
+	<select id="paging" parameterType="map" resultType="int">
+		 select count(vacaNO) from vacation 
+		 where id = #{ id } and ((select min(date) from date where vacaNO = vacation.vacaNO) between
+		  <choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-01-01')) and (DATE_FORMAT(NOW(),'%Y-12-31'))) 
+		 	</otherwise>
+		 </choose>
+	</select> 
+	
+	<!-- <loginUser> 연차 신청 목록 조회 -->
+	<select id="list" parameterType="map" resultType="map">
+		 select id, vacaNO, why, wdate, state,  
+		 (select count(*) from date where vacaNO = vacation.vacaNO) AS day, 
+		 (select min(date) from date where vacaNO = vacation.vacaNO) AS sday, 
+		 (select max(date) from date where vacaNO = vacation.vacaNO) AS eday 
+		 from vacation where id = #{ id } and ((select min(date) from date where vacaNO = vacation.vacaNO) between 
+		 <choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		 #{ startday } and #{ endday }) 
+		 	</when>
+		 	<otherwise>
+		 		 (DATE_FORMAT(NOW(),'%Y-01-01')) and (DATE_FORMAT(NOW(),'%Y-12-31'))) 
+		 	</otherwise>
+		 </choose>
+		 order by (select min(date) from date where vacaNO = vacation.vacaNO) desc limit #{ limitOffset }, #{ perPage }
+	</select>
+		
+	<!-- 연차 신청 -->
+	<insert id="write" parameterType="VacaVo" useGeneratedKeys="true" keyProperty="vacaNO">
+		 insert into vacation (why, wdate, state, id) 
+		 values ( #{ why }, now(), 0, #{ id } ) 
+	</insert>
+	
+	<!-- 연차일자 등록 -->
+	<insert id="vacaAdd" parameterType="DateVo">
+		 insert into date (date, vacaNO, state) 
+		 values ( #{ date }, #{ vacaNO }, 0 )
+	</insert>
+	
+	<!-- 토·일 연차 삭제 -->
+	<delete id="weekend" parameterType="int">
+		 delete from date where (DAYOFWEEK(date)=1 or DAYOFWEEK(date)=7) AND vacaNO= #{ vacaNO }
+	</delete>
+	
+	<!-- 연차 결재자 등록 checkAdd -->
+	<insert id="checkAdd" parameterType="AuthVacaVo">
+		 insert into vacationAuth (id, vacaNO, state) 
+		 values ( #{ id }, #{ vacaNO }, 0 )
+	</insert>
+	
+	<!-- 연차 결재자 삭제 <철회 시> -->
+	<delete id="checkDelete" parameterType="int">
+		delete from vacationAuth where vacaNO = #{ vacaNO }
+	</delete>
+	
+	<!-- 연차 철회 -->
+	<update id="vacaBack" parameterType="int">
+		 update vacation set state = 9 where vacaNO = #{ vacaNO }
+	</update>
+	
+	
+	<!-- 연차 결재자 및 승인 여부 조회 -->
+	<select id="checklist" parameterType="int" resultType="AuthVacaVo">
+		 select auVacaNO, id, vacaNO, state, (select duty from member where id = vacationAuth.id) as duty 
+		 from vacationAuth where vacaNO = #{ vacaNO } order by duty DESC 
+	</select>
+	
+	<!-- 연차 결재자 인원 수 조회 -->
+	<select id="checkCount" parameterType="int" resultType="int">
+		select count(*) from vacationAuth where vacaNO = #{ vacaNO } 
+	</select>
+	
+	<!-- (대기 제외) 결재자 인원 수 조회 -->
+	<select id="checkOkCount" parameterType="int" resultType="int">
+		select count(*) from vacationAuth where (state = 2 OR state = 9) and vacaNO = #{ vacaNO } 
+	</select>
+	
+	<!-- 연차 신청 글 조회 -->
+	<select id="view" parameterType="int" resultType="map">
+		 select id, vacaNO, why, (DATE_FORMAT(wdate,'%Y-%m-%d')) as wdate, state,  
+		 (select count(*) from date where vacaNO = vacation.vacaNO) AS day, 
+		 (select min(date) from date where vacaNO = vacation.vacaNO) AS sday, 
+		 (select max(date) from date where vacaNO = vacation.vacaNO) AS eday 
+		 from vacation where vacaNO = #{ vacaNO }
+	</select>
+	
+	<!-- ★★★★★★★★★★ 연차 조회 ★★★★★★★★★★ -->
+	<!-- 전 사원 연차 부여 <입사일 ~ 현재일> -->
+	<update id="addVacation">
+	 	 update member set vaca = timestampdiff(month, joindate, now()) 
+	</update>
+	
+	<!-- histroy, 연차 승인 목록 조회 -->
+	<select id="history" parameterType="int" resultType="map">
+		  select id, vacaNO, why, wdate, state,  
+		 (select count(*) from date where vacaNO = vacation.vacaNO) AS day, 
+		 (select min(date) from date where vacaNO = vacation.vacaNO) AS sday, 
+		 (select max(date) from date where vacaNO = vacation.vacaNO) AS eday from vacation 
+		 where id = #{ id } and state = 2 and now() > (select min(date) from date where vacaNO = vacation.vacaNO) 
+		 order by vacaNO desc
+	</select>
+	
+	<!-- 연차 조회 인원 수 조회 -->
+	<select id="mpaging" parameterType="int" resultType="int">
+		 select count(id) from member where (state != 0)  
+		<if test="name != null and name != ''">
+		 and (name like concat('%',#{name},'%'))
+		 </if>
+		 <if test="dept != null">
+		 	 and (dept 
+			 <choose>
+				<when test="dept == 0"> between 1 and 3) </when>
+				<when test="dept == 1"> = 1) </when>
+				<when test="dept == 2"> = 2) </when>
+				<when test="dept == 3"> = 3) </when>
+			 </choose>
+		 </if>
+		 <if test="duty != null">
+			 and (duty  
+			 <choose>
+				<when test="duty == 0"> between 1 and 4) </when>
+				<when test="duty == 1"> = 1) </when>
+				<when test="duty == 2"> = 2) </when>
+				<when test="duty == 3"> = 3) </when>
+				<when test="duty == 4"> = 4) </when>
+			 </choose>
+		 </if>
+	</select>
+	
+	<!-- ★★★★★★★★★★ 결재：연차 ★★★★★★★★★★ -->
+	<!-- <문서> 등록 갯 수 조회 -->
+	<select id="avpaging" parameterType="int" resultType="int">
+		 select 
+		 <if test="loginduty != 0">
+			 COUNT(DISTINCT v.vacaNO) 
+			 from vacation v join vacationAuth a on v.vacaNO=a.vacaNO left join member m on v.id = m.id
+			 where a.id = #{ id } and 
+			 (a.state != 0 and a.state != 8) and 
+		 </if>
+		 <if test="loginduty == 0">
+			 COUNT(DISTINCT v.vacaNO)
+			 from vacation v left join member m on v.id = m.id 
+			 where 
+		 </if>
+		 
+		 <if test="loginduty != 0">
+			 a.id = #{ id } and
+		 </if>
+		 (v.wdate between 
+		 <choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		  #{ startday } and #{ endday })  
+		 	</when>
+		 	<otherwise>
+		 		  (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(NOW(),'%Y-12-31')))  
+		 	</otherwise>
+		 </choose>
+ 		 <if test="name != null and name != ''">
+		 and (m.name like concat('%',#{name},'%'))
+		 </if>
+		 <if test="dept != null">
+		 	 and (m.dept 
+			 <choose>
+				<when test="dept == 0"> between 1 and 3) </when>
+				<when test="dept == 1"> = 1) </when>
+				<when test="dept == 2"> = 2) </when>
+				<when test="dept == 3"> = 3) </when>
+			 </choose>
+		 </if>
+		 <if test="duty != null">
+			 and (m.duty  
+			 <choose>
+				<when test="duty == 0"> between 1 and 4) </when>
+				<when test="duty == 1"> = 1) </when>
+				<when test="duty == 2"> = 2) </when>
+				<when test="duty == 3"> = 3) </when>
+				<when test="duty == 4"> = 4) </when>
+			 </choose>
+		 </if>
+		 <if test="astate != null and loginduty != 0">
+			 and (a.state 
+			 <choose>
+				<when test="astate == 0"> = 1 OR a.state = 2 OR a.state = 9) </when>
+				<when test="astate == 1"> = 1) </when>
+				<when test="astate == 2"> = 2) </when>
+				<when test="astate == 3"> = 9) </when>
+			 </choose>
+		 </if>
+		 <if test="state != null and loginduty == 0">
+			  and (v.state 
+			 <choose>
+				<when test="state == 0"> between 0 and 9) </when>
+				<when test="state == 1"> = 0) </when>
+				<when test="state == 2"> = 1) </when>
+				<when test="state == 3"> = 2) </when>
+				<when test="state == 4"> = 8) </when>
+				<when test="state == 5"> = 9) </when>
+			 </choose>
+		 </if>
+	</select>
+
+	<!-- <결재자> 연차 신청 리스트 조회 a：AuthVaca／v：Vaca-->
+	<select id="acceptList" parameterType="map" resultType="map">
+		 select v.vacaNO, v.why, (DATE_FORMAT(v.wdate,'%Y-%m-%d')) as wdate, v.state, v.id 
+		 <if test="loginduty != 0">
+			 , a.auVacaNO, a.state as astate 
+			 from vacation v join vacationAuth a on v.vacaNO=a.vacaNO left join member m on v.id = m.id
+			 where a.id = #{ id } and 
+			 (a.state != 0 and a.state != 8) and 
+		 </if>
+		 <if test="loginduty == 0">
+			 from vacation v left join member m on v.id = m.id 
+			 where 
+		 </if>
+		 (v.wdate between 
+		 <choose>
+		 	<when test='startday neq null and startday neq "" and endday neq null and endday neq ""'>
+		 		  #{ startday } and #{ endday })  
+		 	</when>
+		 	<otherwise>
+		 		  (DATE_FORMAT(NOW(),'%Y-%m-01')) and (DATE_FORMAT(NOW(),'%Y-12-31')))  
+		 	</otherwise>
+		 </choose>
+ 		 <if test="name != null and name != ''">
+		 and (m.name like concat('%',#{name},'%'))
+		 </if>
+		 <if test="dept != null">
+		 	 and (m.dept 
+			 <choose>
+				<when test="dept == 0"> between 1 and 3) </when>
+				<when test="dept == 1"> = 1) </when>
+				<when test="dept == 2"> = 2) </when>
+				<when test="dept == 3"> = 3) </when>
+			 </choose>
+		 </if>
+		 <if test="duty != null">
+			 and (m.duty  
+			 <choose>
+				<when test="duty == 0"> between 1 and 4) </when>
+				<when test="duty == 1"> = 1) </when>
+				<when test="duty == 2"> = 2) </when>
+				<when test="duty == 3"> = 3) </when>
+				<when test="duty == 4"> = 4) </when>
+			 </choose>
+		 </if>
+		 <if test="astate != null and loginduty != 0">
+			 and (a.state 
+			 <choose>
+				<when test="astate == 0"> = 1 OR a.state = 2 OR a.state = 9) </when>
+				<when test="astate == 1"> = 1) </when>
+				<when test="astate == 2"> = 2) </when>
+				<when test="astate == 3"> = 9) </when>
+			 </choose>
+		 </if>
+		 <if test="state != null and loginduty == 0">
+			  and (v.state 
+			 <choose>
+				<when test="state == 0"> between 0 and 9) </when>
+				<when test="state == 1"> = 0) </when>
+				<when test="state == 2"> = 1) </when>
+				<when test="state == 3"> = 2) </when>
+				<when test="state == 4"> = 8) </when>
+				<when test="state == 5"> = 9) </when>
+			 </choose>
+		 </if>
+		 <if test="loginduty != 0">
+		 	order by FIELD(a.state, 1) desc, v.wdate desc 
+		 </if>
+		 <if test="loginduty == 0">
+<!-- 		 	GROUP by v.vacaNO  -->
+		 	order by v.wdate desc 
+		 </if>
+		 limit #{ limitOffset }, #{ perPage } 
+	</select>
+	
+	<!-- <결재자> 기안 목록, vacationAuth 상태 확인 -->
+	<select id="selectCheck" parameterType="AuthVacaVo" resultType="AuthVacaVo">
+		 select * from vacationAuth where id = #{ id } and vacaNO = #{ vacaNO } 
+	</select>
+	
+	<!-- <결재자> vacationAuth 대기：0 → 결재 대기：1 -->
+	<update id="changeOne" parameterType="map">
+		 update vacationAuth set state = 1 where id = #{ AId } AND vacaNO = #{ vacaNO }
+	</update>
+	
+	<!-- <결재자> vacationAuth 결재 대기：0 → 승인：1 -->
+	<update id="approve" parameterType="AuthVacaVo">
+		 update vacationAuth set state = 2 where id = #{ id } AND vacaNO = #{ vacaNO }
+	</update>
+	
+	<!-- <문서> vacation 승인：2 -->
+	<update id="stateTwo" parameterType="int">
+		 update vacation set state = 2 where vacaNO = #{ vacaNO } 
+	</update>
+	
+	<!-- <문서> vacation 진행중：1 -->
+	<update id="stateOne" parameterType="int">
+		 update vacation set state = 1 where vacaNO = #{ vacaNO } 
+	</update>
+	 
+	<!-- <결재자> vacationAuth 반려：9 -->
+	<update id="reject" parameterType="AuthVacaVo">
+		 update vacationAuth set state = 9 where id = #{ id } AND vacaNO = #{ vacaNO }
+	</update>
+	
+	<!-- <결재자> vacationAuth 결재 반려 시, 미 결재자, 결재 불가：8 -->
+	<update id="changeEight" parameterType="map">
+		 update vacationAuth set state = 8 where id = #{ AId } AND vacaNO = #{ vacaNO }
+	</update>
+	
+	<!-- <문서> vacation 반려：8 -->
+	<update id="stateNine" parameterType="int">
+		 update vacation set state = 8 where vacaNO = #{ vacaNO } 
+	</update>
+	
+	
+	<!-- 미결재 연차 수 조회 -->
+	<select id="countVaca" parameterType="int" resultType="int">
+		select count(*) from vacationAuth where state = 1 and id = #{ id }
+	</select>
+</mapper>

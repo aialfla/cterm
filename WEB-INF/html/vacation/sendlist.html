@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="kr">
+<!-- ==== head 시작 ==================================================================================== -->
+<head>
+	<meta charset="UTF-8">
+	<title>cterm</title>
+	<link rel="stylesheet" href="../../resources/css/common.css">
+	<link rel="stylesheet" href="../../resources/css/board.css">
+</head>
+<!-- ==== /head 종료 ==================================================================================== -->
+
+<!-- ==== body 시작 ===================================================================================== -->
+<body>
+	<!-- == 상단창 시작 =============================================================================== -->
+	<header id="header">
+		<h1 class="blind">cterm 인사관리시스템</h1>
+		<div class="info">
+			<ul class="alarm_list">
+				<li><a href="#" title="결재 승인"><i class="fi fi-rr-stamp"></i><span class="num">2</span></a></li>
+				<li><a href="#" title="받은 쪽지"><i class="fi fi-rr-envelope"></i><span class="num">3</span></a></li>
+			</ul>
+			<a href="#" title="내정보" class="info_mine">
+				<div class="icon_person"><i class="fi fi-sr-user PT2"></i></div>
+				<h2><span class="rank">부장</span><span class="name">김철수</span></h2>
+			</a>
+		</div>
+	</header>
+	<!-- == /상단창 종료 ================================================================================== -->
+
+	
+	<!-- == 메인메뉴 시작 ================================================================================== -->
+	<nav id="nav">
+		<ul class="menu">
+			<li class="active">
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-home PT1 fts16"></i></div>
+					<div class="txt">홈</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-briefcase PT1"></i></div>
+					<div class="txt">근무</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-umbrella-beach PT2"></i></div>
+					<div class="txt">연차</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-users-alt PT5 fts20"></i></div>
+					<div class="txt">사원</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-file-edit PT1 PL2"></i></div>
+					<div class="txt">결재</div>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<div class="icon_menu"><i class="fi fi-sr-bullhorn PT2"></i></div>
+					<div class="txt">공지</div>
+				</a>
+			</li>
+		</ul>
+	</nav>
+	<!-- == /메인메뉴 종료 ================================================================================== -->
+
+
+	<!-- == 정보영역 시작 ================================================================================= -->
+	<main id="main">
+		<!-- == 메인정보 시작 ========================================================================== -->
+		<section id="main_warp">
+			<!-- == 서브타이틀 시작 ===================================================================== -->
+			<h3 class="title">초과 근무 신청</h3>
+			<!-- == 서브타이틀 종료 ===================================================================== -->
+			
+			<!-- == 작성 폼 시작 ===================================================================== -->
+			<form action="">
+				<div class="write_wrap">
+					<ul class="write_container">
+						<li>
+							<strong class="tit">결재</strong>
+							<div class="content">
+								<ul class="list_auth">
+									<li>
+										<span class="duty">부장</span>
+										<span class="name">김철수</span>
+										<button type="button" class="btn_del">
+											<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+										</button>
+									</li>
+									<li>
+										<span class="duty">부장</span>
+										<span class="name">김철수</span>
+										<button type="button" class="btn_del">
+											<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+										</button>
+									</li>
+								</ul>
+								<a href="#" class="btn_add" title="결재자 추가">
+									<i class="fi fi-ss-user-add color_purple"></i>
+								</a>
+							</div>
+						</li>
+						<li>
+							<strong class="tit">기간</strong>
+							<div class="content">
+								<ul class="date">
+									<li>
+										<input type="date" value="">
+									</li>
+									<li>
+										<select name="time_start" class="time">
+											<option value="18:00">18:00</option>
+											<option value="19:00">19:00</option>
+											<option value="20:00">20:00</option>
+											<option value="21:00">21:00</option>
+											<option value="22:00">22:00</option>
+											<option value="23:00">23:00</option>
+										</select>
+									</li>
+									<li>
+										<span class="slash"> - </span>
+									</li>
+									<li>
+										<select name="time_end" class="time">
+											<option value="19:00">19:00</option>
+											<option value="20:00">20:00</option>
+											<option value="21:00">21:00</option>
+											<option value="22:00">22:00</option>
+											<option value="23:00">23:00</option>
+											<option value="24:00">24:00</option>
+										</select>
+									</li>
+								</ul>
+							</div>
+						</li>
+						<li>
+							<strong class="tit tit_note">내용</strong>
+							<div class="content">
+								<textarea placeholder="근무 내용을 입력해주세요"></textarea>
+							</div>
+						</li>
+						<li>
+							<strong class="tit tit_file">첨부파일</strong>
+							<div class="col_w100">
+								<div class="file_box">
+									<input type="file" name="file">
+									<a href="#" class="btn_add" title="파일 추가">
+										<i class="fi fi-sr-add-document color_red"></i>
+									</a>
+								</div>
+								<ul class="file_upload">
+									<li>
+										<i class="fi fi-sr-clip"></i>
+										<span>testimg.jpg</span>
+										<button type="button" class="btn_del">
+											<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+										</button>
+									</li>
+									<li>
+										<i class="fi fi-sr-clip"></i>
+										<span>testimg2.jpg</span>
+										<button type="button" class="btn_del">
+											<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+										</button>
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ul>
+					<!-- = 사원목록 popup 시작 = -->
+					<div id="popup" class="active">
+						<div class="popup_warp popup_sendlist">
+							<div class="top_warp">
+								<button type="button" class="btn_close">
+									<i class="fi fi-br-cross"><span class="blind">팝업창 닫기</span></i>
+								</button>
+							</div>
+							<div class="info_warp">
+								<div class="tit_container">
+									<strong>사원 목록</strong>
+									<div class="search_box">
+										<input type="text" placeholder="이름을 입력해주세요">
+										<button type="submit">
+											<i class="fi fi-br-search"></i>
+										</button>
+									</div>
+								</div>
+								<div class="info_container">
+									<div class="dept_wrap">
+										<ul>
+											<li class="active">
+												<strong class="dept">기획부</strong>
+												<span class="num">6</span>
+											</li>
+											<li>
+												<strong class="dept">디자인부</strong>
+												<span class="num">6</span>
+											</li>
+											<li>
+												<strong class="dept">개발부</strong>
+												<span class="num">6</span>
+											</li>
+										</ul>
+									</div>
+									<div class="check_wrap">
+										<div class="checkbox_wrap tit_check">
+											<input type="checkbox" id="select_all" class="btn_checkbox blind">
+											<label for="select_all">
+												<span class="icon_checkbox"></span>
+												<strong class="all">전체 선택</strong>
+											</label>
+										</div>
+										<ul>
+											<li>
+												<div class="checkbox_wrap">
+													<input type="checkbox" id="select_1" class="btn_checkbox blind">
+													<label for="select_1">
+														<span class="icon_checkbox"></span>
+														<strong class="name">김철수</strong><span class="duty">부장</span>
+													</label>
+												</div>
+											</li>
+											<li>
+												<div class="checkbox_wrap">
+													<input type="checkbox" id="select_2" class="btn_checkbox blind">
+													<label for="select_2">
+														<span class="icon_checkbox"></span>
+														<strong class="name">김철수</strong><span class="duty">부장</span>
+													</label>
+												</div>
+											</li>
+										</ul>
+									</div>
+									<div class="select_wrap">
+										<div class="tit_select">
+											<strong>결재자</strong>
+											<span>2</span>
+										</div>
+										<div class="list_select">
+											<ul>
+												<li>
+													<div class="person">
+														김철수<span>부장</span>
+													</div>
+													<button type="button" class="btn_del">
+														<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+													</button>
+												</li>
+												<li>
+													<div class="person">
+														김철수<span>부장</span>
+													</div>
+													<button type="button" class="btn_del">
+														<i class="fi fi-rr-cross-small"><span class="blind">결재자 삭제</span></i>
+													</button>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="btn_wrap MT10">
+								<ul>
+									<li>
+										<a href="#" class="btn_light">닫기</a>
+									</li>
+									<li>
+										<button type="" class="btn_primary">추가</button>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<!-- = 사원목록 popup 종료 = -->
+				</div>
+				<!-- == 버튼 시작 ===================================================================== -->
+				<div class="btn_wrap MT60">
+					<ul>
+						<li>
+							<a href="#" class="btn_light">목록으로</a>
+						</li>
+						<li>
+							<button type="" class="btn_primary">결재요청</button>
+						</li>
+					</ul>
+				</div>
+				<!-- == /버튼 종료 ===================================================================== -->
+			</form>
+			<!-- == /작성 폼 종료 ===================================================================== -->
+		</section>
+		<!-- == /메인정보 종료 ========================================================================== -->
+	</main>
+	<!-- == /정보영역 종료 ================================================================================= -->
+</body>
+<!-- ==== /body 종료 ===================================================================================== -->
+</html>
